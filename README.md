@@ -4,7 +4,7 @@ Ask a business database a question like *"Which products dropped the most from Q
 answer in a sentence, a chart, and the exact SQL behind it. The demo runs on **Fernwood Coffee Roasters**,
 a fictional company with two years of sales, customers, subscriptions and marketing spend.
 
-**Live demo:** _add the Vercel link here_ · built by an AI engineer for small businesses that have the data but no analyst.
+**Live demo:** [tally-nu-sable.vercel.app](https://tally-nu-sable.vercel.app) · built by an AI engineer for small businesses that have the data but no analyst.
 
 ## What it does
 
