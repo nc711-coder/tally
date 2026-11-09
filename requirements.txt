@@ -1,0 +1,7 @@
+psycopg[binary]>=3.2         # Postgres (Supabase)
+sqlglot>=25                  # reads every query before it runs: SELECT only, allowed tables only
+openai>=1.40                 # Groq's API is OpenAI-compatible
+fastapi>=0.110
+uvicorn>=0.29
+httpx>=0.27
+pytest>=8
