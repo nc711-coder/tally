@@ -90,11 +90,28 @@ def invented(text: str, question: str, columns: list[str], rows: list[list]) -> 
     return [raw for raw, x in numbers_in(text) if not _matches(x, raw, known)]
 
 
+def _month(v: str) -> str:
+    y, m = v[:4], int(v[5:7])
+    return f"{MONTHS[m - 1].capitalize()} {y}"
+
+
 def fallback(columns: list[str], rows: list[list]) -> str:
+    """A plain sentence built by code, used when the AI's sentence fails the number check twice. It still
+    leads with the key fact, using only values from the result."""
     if not rows:
         return "Nothing matched that question."
     if len(rows) == 1 and len(columns) == 1:
         return f"The answer is {fmt(rows[0][0], columns[0])}."
+    nums = [j for j in range(1, len(columns))
+            if all(isinstance(r[j], (int, float)) and not isinstance(r[j], bool) for r in rows)]
+    if nums and len(rows) > 1:
+        j, label = nums[0], columns[nums[0]].replace("_", " ")
+        first = rows[0][0]
+        if isinstance(first, str) and re.match(r"^\d{4}-\d{2}-\d{2}", first):
+            last = max(rows, key=lambda r: str(r[0]))
+            return f"{label.capitalize()} was {fmt(last[j], columns[j])} in {_month(str(last[0]))}, the latest of {len(rows)} periods shown."
+        top = max(rows, key=lambda r: r[j])
+        return f"{top[0]} has the highest {label}, at {fmt(top[j], columns[j])}, of {len(rows)} shown."
     return f"Here are the results: {len(rows)} row{'s' if len(rows) != 1 else ''}."
 
 

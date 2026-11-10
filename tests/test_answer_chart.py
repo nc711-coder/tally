@@ -57,3 +57,15 @@ def test_chart_choice():
     assert choose(["name", "units"], [[f"Product number {i}", i] for i in range(8)])["horizontal"]
     assert choose(["name"], [["a"], ["b"]])["type"] == "table"
     assert choose(["channel", "share_pct"], [["web", 24.7], ["wholesale", 59.4]])["formats"]["share_pct"] == "percent"
+
+
+def test_fallback_still_states_the_key_fact():
+    from tally.answer import fallback, invented
+    cols, rows = ["region", "revenue"], [["West", 49766.5], ["Southwest", 71569.65]]
+    text = fallback(cols, rows)
+    assert text == "Southwest has the highest revenue, at $71,569.65, of 2 shown."
+    assert invented(text, "Revenue by region", cols, rows) == []
+    cols, rows = ["month", "revenue"], [["2026-09-01", 98395.0], ["2026-10-01", 109396.6]]
+    text = fallback(cols, rows)
+    assert text == "Revenue was $109,396.60 in October 2026, the latest of 2 periods shown."
+    assert invented(text, "Monthly revenue", cols, rows) == []
