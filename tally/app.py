@@ -137,13 +137,26 @@ def ask(body: Ask, request: Request):
         log.error("not configured: %s", e)
         return JSONResponse({"status": "failed", "message": "The demo isn't set up correctly right now."},
                             status_code=500)
+    except Exception:
+        # Anything unexpected still gets a normal JSON reply. An uncaught error would come back without the
+        # CORS header, and the browser would report it as "couldn't reach the server", hiding the real cause.
+        log.exception("unexpected error answering %r", body.question[:120])
+        return JSONResponse({"status": "failed", "message": "Something went wrong answering that. "
+                                                           "Please try again or rephrase it."}, status_code=500)
     out = {"status": reply.status, "message": reply.message, "answer": "", "follow_ups": [], "sql": pretty(reply.sql),
            "columns": reply.columns, "rows": reply.rows, "truncated": reply.truncated, "chart": None,
            "seconds": {}}
     if reply.status == "answered":
         tw = time.perf_counter()
-        out["answer"], out["follow_ups"], info = write_answer(a.llm, body.question, reply.columns, reply.rows)
-        out["chart"] = choose(reply.columns, reply.rows)
+        try:
+            out["answer"], out["follow_ups"], info = write_answer(a.llm, body.question, reply.columns, reply.rows)
+            out["chart"] = choose(reply.columns, reply.rows)
+        except Exception:
+            log.exception("answer or chart failed for %r", body.question[:120])
+            from .answer import fallback
+            out["answer"], out["follow_ups"], info = fallback(reply.columns, reply.rows), [], \
+                {"rewrites": 0, "fallback": True}
+            out["chart"] = {"type": "table", "x": None, "y": [], "formats": {}, "horizontal": False}
         reply.seconds["answer"] = round(time.perf_counter() - tw, 2)
         out["checks"] = {"answer_rewrites": info["rewrites"], "answer_fallback": info["fallback"],
                          "queries_blocked": sum(1 for x in reply.attempts if x.get("problems"))}

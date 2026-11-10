@@ -48,3 +48,15 @@ def test_examples_and_health():
     c = client()
     assert c.get("/health").json() == {"status": "ok"}
     assert len(c.get("/api/examples").json()["examples"]) >= 4
+
+
+def test_unexpected_error_still_returns_json_with_cors():
+    def boom(q, u):
+        raise ZeroDivisionError("surprise")
+    appmod._analyst = Analyst(llm=Scripted({"action": "sql", "tables": [], "sql": "select 1 from fernwood.orders",
+                                            "message": ""}), db_url="postgresql://x", runner=boom)
+    appmod.limits = appmod.Limits()
+    c = TestClient(appmod.app, raise_server_exceptions=False)
+    r = c.post("/api/ask", json={"question": "x"}, headers={"Origin": "http://localhost:3000"})
+    assert r.status_code == 500 and r.json()["status"] == "failed"
+    assert r.headers.get("access-control-allow-origin") == "http://localhost:3000"
