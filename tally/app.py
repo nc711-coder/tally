@@ -43,7 +43,10 @@ EXAMPLES = [
 ]
 
 app = FastAPI(title="Tally", version="1.0")
-origins = [o.strip() for o in os.environ.get("ALLOWED_ORIGINS", "http://localhost:3000").split(",") if o.strip()]
+# A browser sends its page's origin with no trailing slash ("https://tally-x.vercel.app"), so a slash pasted at
+# the end of an address here would never match; it's removed.
+origins = [o.strip().rstrip("/") for o in os.environ.get("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
+           if o.strip()]
 app.add_middleware(CORSMiddleware, allow_origins=origins, allow_methods=["GET", "POST"], allow_headers=["*"])
 
 
@@ -112,7 +115,8 @@ def visitor(request: Request) -> str:
 
 @app.get("/health")
 def health():
-    return {"status": "ok"}
+    # Lists the page addresses allowed to call the API: the first thing to check when the page can't connect.
+    return {"status": "ok", "allowed_origins": origins}
 
 
 @app.get("/api/examples")

@@ -46,7 +46,7 @@ and run the same `gcloud run deploy` command again. Open the Vercel address and 
 
 | What you see | Likely cause |
 | --- | --- |
-| "Couldn't reach Tally's server" on the page | `NEXT_PUBLIC_API_URL` is wrong (redeploy on Vercel after fixing it), or `ALLOWED_ORIGINS` doesn't list the page's exact address. |
+| "Couldn't reach Tally's server" on the page | Open `<API URL>/health`: `allowed_origins` must list the page's exact address (`https://…vercel.app`). If the logs show `OPTIONS /api/ask 400`, that's this. Otherwise `NEXT_PUBLIC_API_URL` on Vercel is wrong (redeploy the page after fixing it). |
 | "The database isn't reachable right now" | `READER_DATABASE_URL` in `deploy.env.yaml` is wrong, or the Supabase project is paused. |
 | "The demo isn't set up correctly right now" | `GROQ_API_KEY` or `READER_DATABASE_URL` is missing from `deploy.env.yaml`. |
 | Logs | `gcloud run services logs read tally --region us-west1 --limit 50` |

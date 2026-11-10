@@ -46,7 +46,7 @@ def test_rate_limit(monkeypatch):
 
 def test_examples_and_health():
     c = client()
-    assert c.get("/health").json() == {"status": "ok"}
+    assert c.get("/health").json()["status"] == "ok"
     assert len(c.get("/api/examples").json()["examples"]) >= 4
 
 
